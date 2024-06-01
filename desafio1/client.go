@@ -17,7 +17,7 @@ func main() {
 	defer cancel()
 	resp, err := callQuotation(ctx)
 	if err == nil {
-		err := os.WriteFile("/home/jether/go/goexpert-pos/desafio1/client/data/cotacao.txt", []byte(resp), 0644)
+		err := os.WriteFile("/home/jether/go/goexpert-pos/desafio1/data/cotacao.txt", []byte(resp), 0644)
 		check(err)
 	}
 }
