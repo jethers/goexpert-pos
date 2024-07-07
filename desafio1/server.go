@@ -11,8 +11,9 @@ import (
 )
 
 func main() {
-	http.HandleFunc("/cotacao", dollarQuotationHandler)
-	http.ListenAndServe(":8080", nil)
+	myServer := http.NewServeMux()
+	myServer.HandleFunc("/cotacao", dollarQuotationHandler)
+	http.ListenAndServe(":8080", myServer)
 }
 
 func dollarQuotationHandler(w http.ResponseWriter, r *http.Request) {
@@ -26,13 +27,14 @@ func dollarQuotationHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Write([]byte(resp))
 	//w.Write([]byte(`Hello world`))
+	
 
 }
 
 func dollarQuotation(ctx context.Context) (string, error) {
 	url := "https://economia.awesomeapi.com.br/json/last/USD-BRL"
 	res, err := http.Get(url)
-	if err != nil {
+	if err != nil || res.StatusCode != http.StatusOK {
 		log.Output(1, fmt.Sprintf("Error connecting to %s: %s\n", url, err))
 		return "", err
 	}
