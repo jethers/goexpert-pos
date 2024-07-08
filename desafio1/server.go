@@ -8,6 +8,8 @@ import (
 	"log"
 	"net/http"
 	"time"
+	"database/sql"
+	"github.com/mattn/go-sqlite3"
 )
 
 func main() {
@@ -27,8 +29,30 @@ func dollarQuotationHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Write([]byte(resp))
 	//w.Write([]byte(`Hello world`))
-	
 
+	ctx, cancel = context.WithTimeout(ctx, time.Millisecond*10)
+	err = dollarQuotationDataBase(ctx, resp)
+	if err != nil {
+		log.Output(1, err.Error())
+		return
+	}
+}
+
+func dollarQuotationDataBase(ctx, resp string) (error){
+    db, err := sql.Open("sqlite3", "./quotation.db")
+	if err != nil{
+		log.Output(1, err.Error())
+	}
+	defer db.Close()
+
+	select {
+	case <-ctx.Done():
+		err := errors.New("Database call timed out")
+		log.Output(1, err.Error())
+		return "", err
+	default:
+      return
+	}
 }
 
 func dollarQuotation(ctx context.Context) (string, error) {
