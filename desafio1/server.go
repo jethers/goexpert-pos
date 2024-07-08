@@ -2,12 +2,15 @@ package main
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"io"
-	"log"
 	"net/http"
 	"time"
+	"log"
+	"io"
+	"errors"
+	"os"
+	"database/sql"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 func main() {
@@ -27,7 +30,54 @@ func dollarQuotationHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(resp))
 	//w.Write([]byte(`Hello world`))
 
+	err = createDataBase()
+	if err != nil {
+		log.Output(1, err.Error())
+		return
+	}
+
 }
+
+func createDataBase() error {
+	file, err := os.Create("./database.db")
+	if err != nil {
+		return err
+	}
+	file.Close()
+
+	sqliteDatabase, err := sql.Open("sqlite3", "./database.db")
+	defer sqliteDatabase.Close()
+	if err != nil {
+		return err
+	}
+	err = createTable(sqliteDatabase)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func createTable(db *sql.DB) error {
+	createTableSQL := `create table quotations ("quotation" TEXT);`
+	statement, err := db.Prepare(createTableSQL)
+	if err != nil {
+		log.Output(1, err.Error())
+		return err
+	}
+	statement.Exec()
+	insertCode := `insert into quotations(quotation) values(?)`
+	statement, err = db.Prepare(insertCode)
+	if err != nil {
+		return err
+	}
+	_, err = statement.Exec("xxx")
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+
 
 func dollarQuotation(ctx context.Context) (string, error) {
 	url := "https://economia.awesomeapi.com.br/json/last/USD-BRL"

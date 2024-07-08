@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -16,15 +17,18 @@ func main() {
 	ctx, cancel := context.WithTimeout(ctx, time.Millisecond*300)
 	defer cancel()
 	resp, err := callQuotation(ctx)
-	if err == nil {
-		err := os.WriteFile("/home/jether/go/goexpert-pos/desafio1/client/data/cotacao.txt", []byte(resp), 0644)
-		check(err)
+	if err != nil {
+	    panic(err)
 	}
-}
 
-func check(e error) {
-	if e != nil {
-		panic(e)
+    result := make(map[string]interface{})
+	json.Unmarshal([]byte(resp), &result)
+	dollar := result["USDBRL"].(map[string]interface{})
+	cotacao := fmt.Sprintf("Dólar:{%v}", dollar["bid"])
+   
+	err = os.WriteFile("./data/cotacao.txt", []byte(cotacao), 0644)
+	if err != nil {
+	    panic(err)
 	}
 }
 
