@@ -47,7 +47,7 @@ func callQuotation(ctx context.Context) (string, error) {
 	res.Body.Close()
 	select {
 	case <-ctx.Done():
-		err := errors.New("API call timed out")
+		err := errors.New("Server API call timed out")
 		log.Output(1, err.Error())
 		return "", err
 	default:
